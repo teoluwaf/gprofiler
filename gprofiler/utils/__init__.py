@@ -30,7 +30,14 @@ from granulate_utils.exceptions import CouldNotAcquireMutex
 from granulate_utils.linux.mutex import try_acquire_mutex
 from granulate_utils.linux.ns import run_in_ns
 from granulate_utils.linux.process import process_exe
+from granulate_utils import is_windows
 from psutil import Process
+
+if not is_windows():
+    import fcntl
+else:
+    import pythoncom
+    import wmi
 
 from gprofiler.exceptions import (
     CalledProcessError,
@@ -62,7 +69,10 @@ def resource_path(relative_path: str = "") -> str:
 
 @lru_cache(maxsize=None)
 def is_root() -> bool:
-    return os.geteuid() == 0
+    if is_windows():
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    else:
+        return os.geteuid() == 0
 
 
 libc: Optional[ctypes.CDLL] = None
@@ -125,7 +135,10 @@ def start_process(
             env = env if env is not None else os.environ.copy()
             env.update({"LD_LIBRARY_PATH": ""})
 
-    cur_preexec_fn = kwargs.pop("preexec_fn", os.setpgrp)
+    if not is_windows():
+        cur_preexec_fn = kwargs.pop("preexec_fn", os.setpgrp)
+    else:
+        cur_preexec_fn = kwargs.pop("preexec_fn", None)
 
     if term_on_parent_death:
         cur_preexec_fn = wrap_callbacks([set_child_termination_on_parent_death, cur_preexec_fn])
@@ -207,7 +220,7 @@ def run_process(
     via_staticx: bool = False,
     check: bool = True,
     timeout: int = None,
-    kill_signal: signal.Signals = signal.SIGKILL,
+    kill_signal: signal.Signals = signal.SIGTERM if is_windows() else signal.SIGKILL,
     communicate: bool = True,
     stdin: bytes = None,
     **kwargs: Any,
@@ -264,19 +277,25 @@ def run_process(
     elif check and retcode != 0:
         raise CalledProcessError(retcode, process.args, output=stdout, stderr=stderr)
     return result
-
-
 def pgrep_exe(match: str) -> List[Process]:
-    pattern = re.compile(match)
-    procs = []
-    for process in psutil.process_iter():
-        try:
-            if pattern.match(process_exe(process)):
-                procs.append(process)
-        except psutil.NoSuchProcess:  # process might have died meanwhile
-            continue
-    return procs
-
+    if is_windows():
+        pythoncom.CoInitialize()
+        w = wmi.WMI()
+        return [Process(pid=p.ProcessId) for p in w.Win32_Process() if match in p.Name.lower() and p.ProcessId != os.getpid()]
+    else:
+        pattern = re.compile(match)
+        procs = []
+        for process in psutil.process_iter():
+            # Added to prevent AttributeError on processes that have pid == 0
+            if process.pid == 0:
+                continue
+            # End edit
+            try:
+                if pattern.match(process_exe(process)):
+                    procs.append(process)
+            except psutil.NoSuchProcess:  # process might have died meanwhile
+                continue
+        return procs
 
 def pgrep_maps(match: str) -> List[Process]:
     # this is much faster than iterating over processes' maps with psutil.
@@ -378,6 +397,10 @@ def grab_gprofiler_mutex() -> bool:
     on filesystem structure (as happens with file-based locks).
     In order to see who's holding the lock now, you can run "sudo netstat -xp | grep gprofiler".
     """
+    # Bypass due to lack of Windows support
+    if is_windows():
+        # TODO: Windows specific mutex needed
+        return True
     GPROFILER_LOCK = "\x00gprofiler_lock"
 
     try:
@@ -402,6 +425,9 @@ def atomically_symlink(target: str, link_node: str) -> None:
     """
     tmp_path = link_node + ".tmp"
     os.symlink(target, tmp_path)
+    # Windows does not support renaming existing symlink
+    if is_windows() and os.path.exists(link_node):
+        os.remove(link_node)
     os.rename(tmp_path, link_node)
 
 
