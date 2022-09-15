@@ -6,7 +6,6 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 start /wait .\dep\vs_BuildTools.exe --passive --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-Rem start /wait .\dep\vs_BuildTools.exe --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64
 
 SET LINK_LOC="C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.33.31629\bin\Hostx86\x86\link.exe"
 
@@ -28,7 +27,6 @@ GOTO WAIT_FOR_DEPS
 ECHO "Done installing dependencies."
 
 ECHO "Current Path: %PATH%"
-Rem SET PATH=%PATH%;%USERPROFILE%\.cargo\bin;%CD%\deps\winlibs-x86_64-posix-seh-gcc-12.1.0-llvm-14.0.4-mingw-w64ucrt-10.0.0-r2\mingw64\x86_64-w64-mingw32\bin;%CD%\deps\winlibs-x86_64-posix-seh-gcc-12.1.0-llvm-14.0.4-mingw-w64ucrt-10.0.0-r2\mingw64\bin
 SET PATH=%PATH%;%USERPROFILE%\.cargo\bin;%CD%\deps
 ECHO "Modified Path: %PATH%"
 CD py-spy
