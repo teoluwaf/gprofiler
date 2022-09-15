@@ -1,6 +1,6 @@
 [submodule "py-spy"]
 	path = py-spy
-	url = https://github.com/Granulate/py-spy.git
+	url = git@github.com:Granulate/py-spy.git
 [submodule "granulate-utils"]
 	path = granulate-utils
 	url = git@github.com:teoluwaf/granulate-utils.git
