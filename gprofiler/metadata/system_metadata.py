@@ -1,6 +1,5 @@
 import array
 import errno
-import fcntl
 import os
 import platform
 import re
@@ -16,9 +15,13 @@ from typing import Any, Dict, Optional, Tuple, cast
 import distro
 import psutil
 from granulate_utils.linux.ns import run_in_ns
+from granulate_utils import is_windows
 
 from gprofiler.log import get_logger_adapter
 from gprofiler.utils import is_pyinstaller, run_process
+
+if not is_windows():
+    import fcntl
 
 UNKNOWN_VALUE = "unknown"
 
@@ -98,6 +101,8 @@ def get_mac_address() -> str:
     """
     Gets the MAC address of the first non-loopback interface.
     """
+    if is_windows():
+        return UNKNOWN_VALUE
 
     assert sys.maxsize > 2**32, "expected to run on 64-bit!"
     SIZE_OF_STUCT_ifreq = 40  # correct for 64-bit
