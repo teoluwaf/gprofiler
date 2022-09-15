@@ -12,3 +12,5 @@ from gprofiler.profilers.python_ebpf import PythonEbpfProfiler
 __all__ = (["JavaProfiler", "SystemProfiler", "PHPSpyProfiler", "PythonProfiler", "RbSpyProfiler", "DotnetProfiler"]\
            if not is_windows()\
            else ["PythonProfiler", "SystemProfiler"])
+
+del is_windows
