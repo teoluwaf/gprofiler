@@ -51,7 +51,9 @@ from gprofiler.log import get_logger_adapter
 logger = get_logger_adapter(__name__)
 
 GPROFILER_DIRECTORY_NAME = "gprofiler_tmp"
-TEMPORARY_STORAGE_PATH = f"/tmp/{GPROFILER_DIRECTORY_NAME}"
+TEMPORARY_STORAGE_PATH = (f"/tmp/{GPROFILER_DIRECTORY_NAME}"\
+        if not is_windows() \
+        else os.getenv("USERPROFILE") + f"\AppData\Local\Temp\{GPROFILER_DIRECTORY_NAME}")
 
 gprofiler_mutex: Optional[socket.socket] = None
 
