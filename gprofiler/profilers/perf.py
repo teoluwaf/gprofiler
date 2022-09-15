@@ -12,7 +12,7 @@ from threading import Event
 from typing import Any, Dict, List, Optional
 
 from granulate_utils.linux.elf import is_statically_linked, read_elf_symbol, read_elf_va
-from granulate_utils.linux.process import is_musl, process_exe
+from granulate_utils.linux.process import is_musl
 from psutil import NoSuchProcess, Process
 
 from gprofiler import merge
@@ -24,6 +24,7 @@ from gprofiler.profilers.profiler_base import ProfilerBase
 from gprofiler.profilers.registry import ProfilerArgument, register_profiler
 from gprofiler.utils import run_process, start_process, wait_event, wait_for_file_by_prefix
 from gprofiler.utils.perf import perf_path
+from gprofiler.utils.process import is_process_basename_matching
 
 logger = get_logger_adapter(__name__)
 
@@ -135,12 +136,12 @@ class PerfProcess:
 @register_profiler(
     "Perf",
     possible_modes=["fp", "dwarf", "smart", "disabled"],
-    default_mode="fp",
+    default_mode="smart",
     supported_archs=["x86_64", "aarch64"],
     profiler_mode_argument_help="Run perf with either FP (Frame Pointers), DWARF, or run both and intelligently merge"
     " them by choosing the best result per process. If 'disabled' is chosen, do not invoke"
     " 'perf' at all. The output, in that case, is the concatenation of the results from all"
-    " of the runtime profilers.",
+    " of the runtime profilers. Defaults to 'smart'.",
     profiler_arguments=[
         ProfilerArgument(
             "--perf-dwarf-stack-size",
@@ -302,7 +303,7 @@ class GolangPerfMetadata(PerfMetadata):
 
 class NodePerfMetadata(PerfMetadata):
     def relevant_for_process(self, process: Process) -> bool:
-        return os.path.basename(process_exe(process)) == "node"
+        return is_process_basename_matching(process, r"^node$")
 
     def make_application_metadata(self, process: Process) -> Dict[str, Any]:
         metadata = {"node_version": self.get_exe_version_cached(process)}
