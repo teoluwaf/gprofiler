@@ -200,14 +200,22 @@ class SystemInfo:
 
 
 def get_static_system_info() -> SystemInfo:
-    hostname, distribution, libc_tuple, mac_address, local_ip = _initialize_system_info()
-    clock = getattr(time, "CLOCK_BOOTTIME", time.CLOCK_MONOTONIC)
-    try:
-        spawn_uptime_ms = time.clock_gettime(clock)
-    except OSError as error:
-        if error.errno != errno.EINVAL:
-            raise
-        spawn_uptime_ms = time.clock_gettime(time.CLOCK_MONOTONIC)
+    if is_windows():
+        hostname = platform.node()
+        distribution = platform.system(), platform.releas(), platform.version()
+        libc_tuple = platform.libc_ver()
+        mac_address = '' #Use netifaces pip package
+        local_ip = '' #Use netifaces pip package
+        spawn_uptime_ms = time.monotonic() * 1000
+    else:
+        hostname, distribution, libc_tuple, mac_address, local_ip = _initialize_system_info()
+        clock = getattr(time, "CLOCK_BOOTTIME", time.CLOCK_MONOTONIC)
+        try:
+            spawn_uptime_ms = time.clock_gettime(clock)
+        except OSError as error:
+            if error.errno != errno.EINVAL:
+                raise
+            spawn_uptime_ms = time.clock_gettime(time.CLOCK_MONOTONIC)
     libc_type, libc_version = libc_tuple
     os_name, os_release, os_codename = distribution
     uname = platform.uname()
