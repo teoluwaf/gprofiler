@@ -147,6 +147,10 @@ def get_cpu_info() -> Tuple[str, str]:
     Parse /proc/cpuinfo to get model name & flags.
     """
     try:
+        if is_windows():
+            flags, model = platform.processor().split(",")
+            return model, flags
+
         with open("/proc/cpuinfo") as f:
             model_names = []
             flags = []
@@ -202,7 +206,7 @@ class SystemInfo:
 def get_static_system_info() -> SystemInfo:
     if is_windows():
         hostname = platform.node()
-        distribution = platform.system(), platform.releas(), platform.version()
+        distribution = platform.system(), platform.release(), platform.version()
         libc_tuple = platform.libc_ver()
         mac_address = '' #Use netifaces pip package
         local_ip = '' #Use netifaces pip package

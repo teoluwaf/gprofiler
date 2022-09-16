@@ -9,6 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from granulate_utils.linux.process import is_process_running, process_exe
+from granulate_utils import is_windows
 from psutil import NoSuchProcess, Process
 
 
@@ -29,10 +30,14 @@ def read_proc_file(process: Process, file: str) -> str:
 
 
 def process_comm(process: Process) -> str:
-    status = read_proc_file(process, "status")
-    name_line = status.splitlines()[0]
-    assert name_line.startswith("Name:\t")
-    return name_line.split("\t", 1)[1]
+    if is_windows():
+        ensure_running(process)
+        return process.name()
+    else:
+        status = read_proc_file(process, "status")
+        name_line = status.splitlines()[0]
+        assert name_line.startswith("Name:\t")
+        return name_line.split("\t", 1)[1]
 
 
 @lru_cache(maxsize=512)

@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional
 
 from granulate_utils.linux.ns import get_process_nspid, run_in_ns
 from granulate_utils.linux.process import is_process_running, read_process_execfn
+from granulate_utils import is_windows
 from psutil import NoSuchProcess, Process
 
 from gprofiler.log import get_logger_adapter
@@ -74,4 +75,4 @@ class ApplicationMetadata:
         return metadata
 
     def make_application_metadata(self, process: Process) -> Dict[str, Any]:
-        return {"exe": process.exe(), "execfn": read_process_execfn(process)}
+        return {"exe": process.exe(), "execfn": None if is_windows() else read_process_execfn(process)}

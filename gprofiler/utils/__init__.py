@@ -137,13 +137,12 @@ def start_process(
             env = env if env is not None else os.environ.copy()
             env.update({"LD_LIBRARY_PATH": ""})
 
-    if not is_windows():
-        cur_preexec_fn = kwargs.pop("preexec_fn", os.setpgrp)
+    if is_windows():
+        cur_preexec_fn = None #preexec_fn is not supported on Windows platforms. subprocess.py reports this.
     else:
-        cur_preexec_fn = kwargs.pop("preexec_fn", None)
-
-    if term_on_parent_death:
-        cur_preexec_fn = wrap_callbacks([set_child_termination_on_parent_death, cur_preexec_fn])
+        cur_preexec_fn = kwargs.pop("preexec_fn", os.setpgrp)
+        if term_on_parent_death:
+            cur_preexec_fn = wrap_callbacks([set_child_termination_on_parent_death, cur_preexec_fn])
 
     popen = Popen(
         cmd,
