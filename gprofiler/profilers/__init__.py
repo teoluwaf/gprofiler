@@ -1,7 +1,7 @@
 # NOTE: Make sure to import any new process profilers to load it
 from gprofiler.profilers.perf import SystemProfiler
 from gprofiler.profilers.python import PythonProfiler
-from granulate_utils import is_windows
+from gprofiler import is_windows
 if not is_windows():
     from gprofiler.profilers.dotnet import DotnetProfiler
     from gprofiler.profilers.java import JavaProfiler

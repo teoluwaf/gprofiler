@@ -6,6 +6,7 @@ from subprocess import Popen
 from threading import Event
 from typing import Dict, List, NoReturn, Optional
 
+from gprofiler import is_windows
 from gprofiler.exceptions import (
         CalledProcessError,
         StopEventSetException,
@@ -25,7 +26,6 @@ from gprofiler.utils import (
         wait_for_file_by_prefix,
 )
 
-from granulate_utils import is_windows
 if not is_windows():
     import resource
 
