@@ -30,7 +30,7 @@ from granulate_utils.exceptions import CouldNotAcquireMutex
 from granulate_utils.linux.mutex import try_acquire_mutex
 from granulate_utils.linux.ns import run_in_ns
 from granulate_utils.linux.process import process_exe
-from gprofiler import is_windows
+from gprofiler.platform import is_windows
 from psutil import Process
 
 if not is_windows():

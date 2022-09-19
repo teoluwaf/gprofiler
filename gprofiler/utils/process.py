@@ -9,7 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from granulate_utils.linux.process import is_process_running, process_exe
-from gprofiler import is_windows
+from gprofiler.platform import is_windows
 from psutil import NoSuchProcess, Process
 
 
