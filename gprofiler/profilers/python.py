@@ -2,27 +2,22 @@
 # Copyright (c) Granulate. All rights reserved.
 # Licensed under the AGPL3 License. See LICENSE.md in the project root for license information.
 #
-import glob
 import os
 import re
 import signal
 from collections import Counter, defaultdict
 from pathlib import Path
-from subprocess import CompletedProcess, Popen
+from subprocess import CompletedProcess
 from threading import Event
-from typing import Any, Dict, List, Match, NoReturn, Optional, cast
+from typing import Any, Dict, List, Match, Optional, cast
 
 from granulate_utils.linux.elf import get_elf_id
-from granulate_utils.linux.ns import get_process_nspid, is_running_in_init_pid, run_in_ns
+from granulate_utils.linux.ns import get_process_nspid, run_in_ns
 from granulate_utils.linux.process import get_mapped_dso_elf_id, is_process_running, process_exe
 from granulate_utils.python import _BLACKLISTED_PYTHON_PROCS, DETECTED_PYTHON_PROCESSES_REGEX
 from psutil import NoSuchProcess, Process
 
 from gprofiler import merge
-from gprofiler.platform import is_windows
-if not is_windows():
-    import resource
-
 from gprofiler.exceptions import (
     CalledProcessError,
     CalledProcessTimeoutError,
@@ -41,23 +36,14 @@ from gprofiler.metadata import application_identifiers
 from gprofiler.metadata.application_metadata import ApplicationMetadata
 from gprofiler.metadata.py_module_version import get_modules_versions
 from gprofiler.metadata.system_metadata import get_arch
-from gprofiler.profilers.profiler_base import ProfilerBase, ProfilerInterface, SpawningProcessProfilerBase
+from gprofiler.platform import is_windows
+from gprofiler.profilers.profiler_base import ProfilerInterface, SpawningProcessProfilerBase
 from gprofiler.profilers.registry import ProfilerArgument, register_profiler
+
 if not is_windows():
     from gprofiler.profilers.python_ebpf import PythonEbpfProfiler, PythonEbpfError
 
-from gprofiler.utils import (
-    pgrep_maps,
-    poll_process,
-    pgrep_exe,
-    random_prefix,
-    removed_path,
-    resource_path,
-    run_process,
-    start_process,
-    wait_event,
-    wait_for_file_by_prefix,
-)
+from gprofiler.utils import pgrep_exe, pgrep_maps, random_prefix, removed_path, resource_path, run_process
 from gprofiler.utils.process import is_process_basename_matching, process_comm, search_proc_maps
 
 logger = get_logger_adapter(__name__)
@@ -201,7 +187,7 @@ class PySpyProfiler(SpawningProcessProfilerBase):
             "--format",
             "raw",
             "-F",
-            #"--gil",
+            # "--gil",
             "--output",
             output_path,
             "-p",
@@ -260,7 +246,7 @@ class PySpyProfiler(SpawningProcessProfilerBase):
         filtered_procs = []
         all_processes = []
         if is_windows():
-            all_processes = [x for x in pgrep_exe('python')]
+            all_processes = [x for x in pgrep_exe("python")]
         else:
             all_processes = [x for x in pgrep_maps(DETECTED_PYTHON_PROCESSES_REGEX)]
 
@@ -295,7 +281,6 @@ class PySpyProfiler(SpawningProcessProfilerBase):
             return True
 
         return False
-
 
 
 @register_profiler(
@@ -383,6 +368,7 @@ class PythonProfiler(ProfilerInterface):
             self._pyspy_profiler = None
 
     if not is_windows():
+
         def _create_ebpf_profiler(
             self,
             frequency: int,

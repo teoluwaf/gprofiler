@@ -8,9 +8,10 @@ import re
 from functools import lru_cache
 from typing import Match, Optional
 
-from gprofiler.platform import is_windows
 from granulate_utils.linux.process import process_exe, read_proc_file
 from psutil import Process
+
+from gprofiler.platform import is_windows
 
 
 def search_proc_maps(process: Process, pattern: str) -> Optional[Match[str]]:
@@ -19,7 +20,7 @@ def search_proc_maps(process: Process, pattern: str) -> Optional[Match[str]]:
 
 def process_comm(process: Process) -> str:
     if is_windows():
-        #TODO: Check if process is running
+        # TODO: Check if process is running
         return process.name()
     else:
         status = read_proc_file(process, "status").decode()

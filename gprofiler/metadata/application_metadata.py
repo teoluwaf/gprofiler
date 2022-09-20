@@ -12,8 +12,8 @@ from granulate_utils.linux.ns import get_process_nspid, run_in_ns
 from granulate_utils.linux.process import is_process_running, read_process_execfn
 from psutil import NoSuchProcess, Process
 
-from gprofiler.platform import is_windows
 from gprofiler.log import get_logger_adapter
+from gprofiler.platform import is_windows
 from gprofiler.utils import run_process
 
 logger = get_logger_adapter(__name__)

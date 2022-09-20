@@ -30,12 +30,11 @@ from granulate_utils.exceptions import CouldNotAcquireMutex
 from granulate_utils.linux.mutex import try_acquire_mutex
 from granulate_utils.linux.ns import run_in_ns
 from granulate_utils.linux.process import process_exe
-from gprofiler.platform import is_windows
 from psutil import Process
 
-if not is_windows():
-    import fcntl
-else:
+from gprofiler.platform import is_windows
+
+if is_windows():
     import pythoncom
     import wmi
 
@@ -51,9 +50,11 @@ from gprofiler.log import get_logger_adapter
 logger = get_logger_adapter(__name__)
 
 GPROFILER_DIRECTORY_NAME = "gprofiler_tmp"
-TEMPORARY_STORAGE_PATH = (f"/tmp/{GPROFILER_DIRECTORY_NAME}"\
-        if not is_windows() \
-        else os.getenv("USERPROFILE") + f"\AppData\Local\Temp\{GPROFILER_DIRECTORY_NAME}")
+TEMPORARY_STORAGE_PATH = (
+    f"/tmp/{GPROFILER_DIRECTORY_NAME}"
+    if not is_windows()
+    else os.getenv("USERPROFILE") + f"\\AppData\\Local\\Temp\\{GPROFILER_DIRECTORY_NAME}"
+)
 
 gprofiler_mutex: Optional[socket.socket] = None
 
@@ -138,7 +139,7 @@ def start_process(
             env.update({"LD_LIBRARY_PATH": ""})
 
     if is_windows():
-        cur_preexec_fn = None #preexec_fn is not supported on Windows platforms. subprocess.py reports this.
+        cur_preexec_fn = None  # preexec_fn is not supported on Windows platforms. subprocess.py reports this.
     else:
         cur_preexec_fn = kwargs.pop("preexec_fn", os.setpgrp)
         if term_on_parent_death:
@@ -278,11 +279,17 @@ def run_process(
     elif check and retcode != 0:
         raise CalledProcessError(retcode, process.args, output=stdout, stderr=stderr)
     return result
+
+
 def pgrep_exe(match: str) -> List[Process]:
     if is_windows():
         pythoncom.CoInitialize()
         w = wmi.WMI()
-        return [Process(pid=p.ProcessId) for p in w.Win32_Process() if match in p.Name.lower() and p.ProcessId != os.getpid()]
+        return [
+            Process(pid=p.ProcessId)
+            for p in w.Win32_Process()
+            if match in p.Name.lower() and p.ProcessId != os.getpid()
+        ]
     else:
         pattern = re.compile(match)
         procs = []
@@ -297,6 +304,7 @@ def pgrep_exe(match: str) -> List[Process]:
             except psutil.NoSuchProcess:  # process might have died meanwhile
                 continue
         return procs
+
 
 def pgrep_maps(match: str) -> List[Process]:
     # this is much faster than iterating over processes' maps with psutil.

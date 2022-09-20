@@ -15,9 +15,9 @@ from typing import Any, Dict, Optional, Tuple, cast
 import distro
 import psutil
 from granulate_utils.linux.ns import run_in_ns
-from gprofiler.platform import is_windows
 
 from gprofiler.log import get_logger_adapter
+from gprofiler.platform import is_windows
 from gprofiler.utils import is_pyinstaller, run_process
 
 if not is_windows():
@@ -208,8 +208,8 @@ def get_static_system_info() -> SystemInfo:
         hostname = platform.node()
         distribution = platform.system(), platform.release(), platform.version()
         libc_tuple = platform.libc_ver()
-        mac_address = '' #Use netifaces pip package
-        local_ip = '' #Use netifaces pip package
+        mac_address = ""  # Use netifaces pip package
+        local_ip = ""  # Use netifaces pip package
         spawn_uptime_ms = time.monotonic() * 1000
     else:
         hostname, distribution, libc_tuple, mac_address, local_ip = _initialize_system_info()
