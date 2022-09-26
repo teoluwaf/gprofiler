@@ -141,7 +141,6 @@ class PythonMetadata(ApplicationMetadata):
         # if libpython exists then the python binary itself is of less importance; however, to avoid confusion
         # we collect them both here (then we're able to know if either exist)
         if is_windows():
-            exe_elfid = None
             libpython_elfid = None
         else:
             exe_elfid = get_elf_id(f"/proc/{process.pid}/exe")
@@ -226,11 +225,7 @@ class PySpyProfiler(SpawningProcessProfilerBase):
                 ):
                     logger.debug(f"Profiled process {process.pid} exited before py-spy could start")
                     return ProfileData(
-                        self._profiling_error_stack(
-                            "error",
-                            comm,
-                            "process exited before py-spy started",
-                        ),
+                        self._profiling_error_stack("error", comm, "process exited before py-spy started"),
                         appid,
                         app_metadata,
                     )
@@ -337,12 +332,12 @@ class PythonProfiler(ProfilerInterface):
 
         assert python_mode in ("auto", "pyperf", "pyspy"), f"unexpected mode: {python_mode}"
 
-        if get_arch() != "x86_64":
+        if get_arch() != "x86_64" or is_windows():
             if python_mode == "pyperf":
                 logger.warning("PyPerf is supported only on x86_64, falling back to py-spy")
             python_mode = "pyspy"
 
-        if python_mode in ("auto", "pyperf") and not is_windows():
+        if python_mode in ("auto", "pyperf"):
             self._ebpf_profiler = self._create_ebpf_profiler(
                 frequency,
                 duration,

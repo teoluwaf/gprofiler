@@ -7,13 +7,11 @@ if not is_windows():
     from gprofiler.profilers.dotnet import DotnetProfiler
     from gprofiler.profilers.java import JavaProfiler
     from gprofiler.profilers.php import PHPSpyProfiler
-    from gprofiler.profilers.python_ebpf import PythonEbpfProfiler
     from gprofiler.profilers.ruby import RbSpyProfiler
 
-__all__ = (
-    ["JavaProfiler", "SystemProfiler", "PHPSpyProfiler", "PythonProfiler", "RbSpyProfiler", "DotnetProfiler"]
-    if not is_windows()
-    else ["PythonProfiler", "SystemProfiler"]
-)
+__all__ = ["PythonProfiler", "SystemProfiler"]
+
+if not is_windows():
+    __all__ += ["JavaProfiler", "PHPSpyProfiler", "RbSpyProfiler", "DotnetProfiler"]
 
 del is_windows
