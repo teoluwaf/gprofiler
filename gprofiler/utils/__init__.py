@@ -53,7 +53,7 @@ GPROFILER_DIRECTORY_NAME = "gprofiler_tmp"
 TEMPORARY_STORAGE_PATH = (
     f"/tmp/{GPROFILER_DIRECTORY_NAME}"
     if not is_windows()
-    else os.getenv("USERPROFILE") + f"\\AppData\\Local\\Temp\\{GPROFILER_DIRECTORY_NAME}"
+    else os.getenv("USERPROFILE", default=os.getcwd()) + f"\\AppData\\Local\\Temp\\{GPROFILER_DIRECTORY_NAME}"
 )
 
 gprofiler_mutex: Optional[socket.socket] = None
@@ -73,7 +73,7 @@ def resource_path(relative_path: str = "") -> str:
 @lru_cache(maxsize=None)
 def is_root() -> bool:
     if is_windows():
-        return ctypes.windll.shell32.IsUserAnAdmin()
+        return ctypes.windll.shell32.IsUserAnAdmin() == 1
     else:
         return os.geteuid() == 0
 

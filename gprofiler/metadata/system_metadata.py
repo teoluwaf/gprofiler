@@ -148,8 +148,8 @@ def get_cpu_info() -> Tuple[str, str]:
     """
     try:
         if is_windows():
-            flags, model = platform.processor().split(",")
-            return model, flags
+            win_flags, model = platform.processor().split(",")
+            return model, win_flags
 
         with open("/proc/cpuinfo") as f:
             model_names = []
