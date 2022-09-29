@@ -354,9 +354,6 @@ _IDENTIFIERS_MAP: Dict[str, List[_ApplicationIdentifier]] = {
         _PySparkApplicationIdentifier(),
         _PythonModuleApplicationIdentifier(),
     ],
-    # "java": [
-    #    _JavaJarApplicationIdentifier(),
-    # ],
 }
 
 if not is_windows():
