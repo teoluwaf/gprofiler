@@ -141,6 +141,7 @@ class PythonMetadata(ApplicationMetadata):
         # if libpython exists then the python binary itself is of less importance; however, to avoid confusion
         # we collect them both here (then we're able to know if either exist)
         if is_windows():
+            exe_elfid = None
             libpython_elfid = None
         else:
             exe_elfid = get_elf_id(f"/proc/{process.pid}/exe")
